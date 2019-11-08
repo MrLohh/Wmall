@@ -1,6 +1,6 @@
 <template>
   <div class="nav-bar">
-    <!--因为不能再slot上添加class用于添加样式，所以需要给外层包div-->
+    <!--因为不能在slot上添加class用于添加样式，所以需要给外层包div-->
     <div class="left">
       <slot name="left"></slot>
     </div>

@@ -33,8 +33,14 @@
             scrollTo(x, y, time = 300) {
                 this.scroll.scrollTo(x, y, time)
             },
+            // refresh() {
+            //     this.scroll && this.scroll.refresh()
+            // },
             finishPullUp() {
                 this.scroll.finishPullUp()//完成下拉加载更多后，需要再次下拉加载，必须先调用此方法
+            },
+            getScrollY() {
+                return this.scroll.y
             }
         },
         mounted() {

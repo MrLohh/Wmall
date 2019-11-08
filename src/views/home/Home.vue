@@ -51,7 +51,9 @@
                 currentType: 'pop',
                 isShowBackTop: false,
                 tabOffsetTop: null,
-                isTabFixed: false
+                isTabFixed: false,
+                saveY: 0
+
             }
         },
         computed: {
@@ -78,6 +80,15 @@
             this.getHomeGoods('sell')
         },
         mounted() {
+        },
+        activated() {
+            // console.log('activated');
+            this.$refs.scroll.scrollTo(0, this.saveY, 0)
+            // this.$refs.scroll.refresh()
+        },
+        deactivated() {
+            // console.log('deactivated');
+            this.saveY = this.$refs.scroll.getScrollY()
         },
         // updated() {
         //     //1.所有的组件都有 $el属性，用于获取组件中的元素
@@ -143,7 +154,7 @@
                 // console.log('拉到低啦');
                 // console.log(this.currentType);
                 this.getHomeGoods(this.currentType)
-                console.log(this.$refs.scroll.scroll);
+                // console.log(this.$refs.scroll.scroll);
                 this.$refs.scroll.finishPullUp() //完成下拉加载更多后，需要再次下拉加载，必须先调用此方法
             },
             swiperImgLoad() {
@@ -191,6 +202,7 @@
     top: 0;
     z-index: 8;
   }
+
   .fixed {
     display: flex;
     top: 44px;
