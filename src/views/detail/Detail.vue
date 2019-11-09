@@ -1,11 +1,14 @@
 <template>
   <div class="detail">
-    <detail-nav-bar class="detail-nav"></detail-nav-bar>
-    <scroll class="content">
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav"></detail-nav-bar>
+    <scroll class="content" ref="scroll" @scroll="contentScroll" :probeType="3">
       <detail-swiper :top-images="topImages"></detail-swiper>
       <detail-base-info :goods="goods"></detail-base-info>
       <detail-shop-info :shop="shop" class="shop-info"></detail-shop-info>
       <detail-goods-info :detailInfo="detailInfo"></detail-goods-info>
+      <detail-param-info ref="params" :param-info="paramInfo"></detail-param-info>
+      <detail-comment-info ref="comments" :comment-info="commentInfo"></detail-comment-info>
+      <goods-list ref="recommends" :goods="recommends"></goods-list>
     </scroll>
   </div>
 </template>
@@ -16,10 +19,13 @@
     import DetailBaseInfo from "./childComps/DetailBaseInfo";
     import DetailShopInfo from "./childComps/DetailShopInfo";
     import DetailGoodsInfo from "./childComps/DetailGoodsInfo";
+    import DetailParamInfo from "./childComps/DetailParamInfo";
+    import DetailCommentInfo from "./childComps/DetailCommentInfo";
 
     import Scroll from "components/common/scroll/Scroll";
+    import GoodsList from "components/content/goods/GoodsList";
 
-    import {getDetail,Goods,Shop} from "network/detail";
+    import {getDetail,Goods,Shop,GoodsParam,getRecommend} from "network/detail";
 
     export default {
         name: "Detail",
@@ -29,7 +35,12 @@
                 topImages: [], //详情页轮播区图片
                 goods: {},
                 shop: {},
-                detailInfo: {}
+                detailInfo: {},
+                paramInfo: {},
+                commentInfo: {},
+                recommends: [],
+                themeTops: [],
+                currentIndex: null
             }
         },
         components: {
@@ -38,7 +49,33 @@
             DetailBaseInfo,
             DetailShopInfo,
             DetailGoodsInfo,
-            Scroll
+            DetailParamInfo,
+            DetailCommentInfo,
+            Scroll,
+            GoodsList,
+        },
+        methods: {
+            titleClick(index) {
+                // console.log(index);
+                this.$refs.scroll.scrollTo(0, -this.themeTops[index], 300)
+            },
+            contentScroll(position) {
+                // console.log(position);
+                const positionY = -position.y;
+                // console.log(positionY);
+                for(let i = 0; i < 4; i++){
+                    // console.log(i,'1');
+                    // if(positionY > this.themeTops[i] && positionY < this.themeTops[i+1]){
+                    //     // this.currentIndex = i;
+                    //     console.log(i);
+                    // }
+                    if(this.currentIndex !== i && ((i < 3 && positionY >= this.themeTops[i] && positionY < this.themeTops[i+1]) || (i === 3 && positionY >= this.themeTops[i]))){
+                        this.currentIndex = i;
+                        console.log(this.currentIndex);
+                        this.$refs.nav.currentIndex = this.currentIndex;
+                    }
+                }
+            }
         },
         created() {
             //保存iid
@@ -55,7 +92,46 @@
                 this.shop = new Shop(data.shopInfo)
                 //穿着 数据获取
                 this.detailInfo = data.detailInfo
+                //获取参数信息
+                this.paramInfo = new GoodsParam(data.itemParams.info, data.itemParams.rule)
+                //获取评论信息
+                if(data.rate.cRate !== 0){
+                    this.commentInfo = data.rate.list[0]
+                }
+
+                //等数据传递过去并渲染完dom 执行下面这个回调
+                //虽然dom渲染完毕，但是图片还可能未加载完毕
+                //offsetTop值不对的原因，都是因为图片的问题
+                // this.$nextTick(() => {
+                //     this.themeToYs.push(0)
+                //     this.themeToYs.push(this.$refs.params.$el.offsetTop-30)
+                //     this.themeToYs.push(this.$refs.comments.$el.offsetTop)
+                //     this.themeToYs.push(this.$refs.recommends.$el.offsetTop-50)
+                //     console.log(this.themeToYs);
+                // })
             })
+
+            //请求详情页推荐数据
+            getRecommend().then(res => {
+                // console.log(res);
+                this.recommends = res.data.list
+            })
+        },
+        mounted() {
+            // this.themeToYs.push(0)
+            // this.themeToYs.push(this.$refs.params.$el.offsetTop)
+            // this.themeToYs.push(this.$refs.comments.$el.offsetTop)
+            // this.themeToYs.push(this.$refs.recommends.$el.offsetTop)
+            // console.log(this.themeToYs);
+        },
+        updated() {
+            setTimeout(() => {
+                this.themeTops.push(0)
+                this.themeTops.push(this.$refs.params.$el.offsetTop-30)
+                this.themeTops.push(this.$refs.comments.$el.offsetTop)
+                this.themeTops.push(this.$refs.recommends.$el.offsetTop-50)
+                console.log(this.themeTops);
+            }, 300)
         }
     }
 </script>

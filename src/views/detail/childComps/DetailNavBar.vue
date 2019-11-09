@@ -6,7 +6,8 @@
     <div slot="center" class="center">
       <div v-for="(title, index) in titles"
            class="title"
-           :class="{active: currentIndex === index}" @click="titleClick(index)">
+           :class="{active: currentIndex === index}"
+           @click="titleClick(index)">
         {{title}}
       </div>
     </div>
@@ -25,7 +26,8 @@
         },
         methods: {
             titleClick(index) {
-                this.currentIndex = index
+                this.currentIndex = index;
+                this.$emit('titleClick', index)
             },
             backClick() {
                 this.$router.back()

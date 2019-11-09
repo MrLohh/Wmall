@@ -1,11 +1,34 @@
-export function debounce(fn, delay) {
+export function formatDate(date, fmt) {
+  if (/(y+)/.test(fmt)) {
+    fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
+  }
+  let o = {
+    'M+': date.getMonth() + 1,
+    'd+': date.getDate(),
+    'h+': date.getHours(),
+    'm+': date.getMinutes(),
+    's+': date.getSeconds()
+  };
+  for (let k in o) {
+    if (new RegExp(`(${k})`).test(fmt)) {
+      let str = o[k] + '';
+      fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? str : padLeftZero(str));
+    }
+  }
+  return fmt;
+};
+
+function padLeftZero (str) {
+  return ('00' + str).substr(str.length);
+};
+
+export function debounce(fn, timeout = 300) {
   let timer = null;
-  return function () {
-    let selt = this;
-    let args = arguments;
+  return function (..._args) {
+    let _self = this;
     timer && clearTimeout(timer);
-    timer = setTimeout(function () {
-      fn.apply(selt, args);
-    }, delay || 1000);
+    setTimeout(() => {
+      fn.apply(_self, _args);
+    }, timeout)
   }
 }
