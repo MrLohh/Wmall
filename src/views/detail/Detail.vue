@@ -1,7 +1,10 @@
 <template>
   <div class="detail">
     <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav"></detail-nav-bar>
-    <scroll class="content" ref="scroll" @scroll="contentScroll" :probeType="3">
+    <scroll class="content"
+            ref="scroll"
+            @scroll="contentScroll"
+            :probeType="3">
       <detail-swiper :top-images="topImages"></detail-swiper>
       <detail-base-info :goods="goods"></detail-base-info>
       <detail-shop-info :shop="shop" class="shop-info"></detail-shop-info>
@@ -10,6 +13,8 @@
       <detail-comment-info ref="comments" :comment-info="commentInfo"></detail-comment-info>
       <goods-list ref="recommends" :goods="recommends"></goods-list>
     </scroll>
+    <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
+    <detail-bottom-bar @addToCart="addToCart"></detail-bottom-bar>
   </div>
 </template>
 
@@ -21,9 +26,11 @@
     import DetailGoodsInfo from "./childComps/DetailGoodsInfo";
     import DetailParamInfo from "./childComps/DetailParamInfo";
     import DetailCommentInfo from "./childComps/DetailCommentInfo";
+    import DetailBottomBar from "./childComps/DetailBottomBar";
 
     import Scroll from "components/common/scroll/Scroll";
     import GoodsList from "components/content/goods/GoodsList";
+    import BackTop from "components/content/backTop/BackTop";
 
     import {getDetail,Goods,Shop,GoodsParam,getRecommend} from "network/detail";
 
@@ -40,7 +47,8 @@
                 commentInfo: {},
                 recommends: [],
                 themeTops: [],
-                currentIndex: null
+                currentIndex: null,
+                isShowBackTop: false,
             }
         },
         components: {
@@ -53,6 +61,8 @@
             DetailCommentInfo,
             Scroll,
             GoodsList,
+            DetailBottomBar,
+            BackTop
         },
         methods: {
             titleClick(index) {
@@ -69,12 +79,30 @@
                     //     // this.currentIndex = i;
                     //     console.log(i);
                     // }
-                    if(this.currentIndex !== i && ((i < 3 && positionY >= this.themeTops[i] && positionY < this.themeTops[i+1]) || (i === 3 && positionY >= this.themeTops[i]))){
+                    // if(this.currentIndex !== i && ((i < 3 && positionY >= this.themeTops[i] && positionY < this.themeTops[i+1]) || (i === 3 && positionY >= this.themeTops[i]))){
+                    //     this.currentIndex = i;
+                    //     console.log(this.currentIndex);
+                    //     this.$refs.nav.currentIndex = this.currentIndex;
+                    // }
+                    if(this.currentIndex !== i && (positionY >= this.themeTops[i] && positionY < this.themeTops[i+1])){
                         this.currentIndex = i;
-                        console.log(this.currentIndex);
                         this.$refs.nav.currentIndex = this.currentIndex;
+                        // console.log(this.currentIndex);
                     }
-                }
+                };
+                this.isShowBackTop = position.y < -1000
+            },
+            backClick() {
+                this.$refs.scroll.scrollTo(0, 0, 500)
+            },
+            addToCart() {
+                const product = {};
+                product.image = this.topImages[0]
+                product.title = this.goods.title
+                product.desc = this.goods.desc
+                product.price = this.goods.realPrice
+                product.iid = this.iid
+                this.$store.dispatch('addCart', product)
             }
         },
         created() {
@@ -130,7 +158,9 @@
                 this.themeTops.push(this.$refs.params.$el.offsetTop-30)
                 this.themeTops.push(this.$refs.comments.$el.offsetTop)
                 this.themeTops.push(this.$refs.recommends.$el.offsetTop-50)
-                console.log(this.themeTops);
+                this.themeTops.push(Number.MAX_VALUE)
+                // console.log(Number.MAX_VALUE);
+                // console.log(this.themeTops);
             }, 300)
         }
     }
@@ -149,7 +179,7 @@
     z-index: 10;
   }
   .content {
-    height: calc(100vh - 44px);
+    height: calc(100vh - 44px - 49px);
   }
   .shop-info {
     background: #fff;
